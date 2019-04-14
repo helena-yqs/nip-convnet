@@ -360,21 +360,7 @@ class CAE:
 
 				# ACTIVATION
 				if layer > 0:
-					# do not use the activation function in the last layer because we want the logits
-					if self.hl_reconstruction_activation_function == 'relu':
-						reconst_act = tf.nn.relu(reconst_preact, name='reconst_act')
-
-						alive_neurons = tf.count_nonzero(reconst_act, name='alive_relus_in_reconstruction_layer_{}'.format(layer))
-						self._summaries.append(tf.summary.scalar('alive neurons in reconstruction layer {}'.format(layer), alive_neurons))
-
-					elif self.hl_reconstruction_activation_function == 'lrelu':
-						reconst_act = l_relu(reconst_preact, leak = self.relu_leak, name='reconst_act')
-
-					elif self.hl_reconstruction_activation_function == 'scaled_tanh':
-						reconst_act = tf.add(tf.nn.tanh(reconst_preact) / 2, 0.5, name='reconst_act')
-
-					else:
-						reconst_act = tf.nn.sigmoid(reconst_preact ,name='reconst_act')
+					reconst_act = tf.nn.sigmoid(reconst_preact ,name='reconst_act')
 
 					tmp_tensor = reconst_act
 
@@ -393,14 +379,7 @@ class CAE:
 		if self._reconstruction is None:
 			print('initialize reconstruction')
 
-			if self.output_reconstruction_activation == 'scaled_tanh':
-
-				self._reconstruction = tf.add(tf.nn.tanh(self.logit_reconstruction) / 2, 0.5, name='scaled_tanh_reconstruction')
-
-			else:
-
-				self._reconstruction = tf.nn.sigmoid(self.logit_reconstruction, name='reconstruction')
-		
+			self._reconstruction = tf.nn.sigmoid(self.logit_reconstruction, name='reconstruction')
 		
 			self._summaries.append(tf.summary.image('input', self.data))
 			self._summaries.append(tf.summary.image('reconstruction', self._reconstruction))
