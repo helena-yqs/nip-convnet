@@ -1,8 +1,6 @@
 import tensorflow as tf 
 import numpy as np
 
-from lib.activations import l_relu
-
 class CAE:
 	# convolutional autoencoder 
 
@@ -16,16 +14,7 @@ class CAE:
 			print('Hidden channels 		: {}'.format(', '.join(map(str, hidden_channels))))
 			print('Pooling         		: {}'.format(pooling_type))
 			print('Weight tying 		: {}'.format(tie_conv_weights))
-
-			if activation_function != output_reconstruction_activation:
-				if activation_function == 'lrelu':
-					print('Hidden activation: lrelu (leak {})'.format(relu_leak))
-				else:
-					print('Hidden activations	: {}'.format(activation_function))
-				print('Output activation    : {}'.format(output_reconstruction_activation))
-			else:
-				print('Activation function  : {}'.format(activation_function))
-
+			print('Activation function  : {}'.format(activation_function))
 
 			print('->Training:')
 			print('Weight init parameters: W~N({},{}), b = {}'.format(weight_init_mean, weight_init_stddev, initial_bias_value))
@@ -54,8 +43,7 @@ class CAE:
 
 		self.pooling_type 			= pooling_type
 		self.activation_function	= activation_function
-		self.relu_leak = relu_leak # only used if activation function is leaky relu
-
+		
 		self.hl_reconstruction_activation_function = self.activation_function
 
 		self.output_reconstruction_activation	= output_reconstruction_activation
@@ -210,24 +198,7 @@ class CAE:
 					self._summaries.append(tf.summary.histogram('layer {} preactivations'.format(layer), conv_preact))
 
 				# ACTIVATION
-				if self.activation_function == 'relu':
-					conv_act = tf.nn.relu(conv_preact, name='conv_{}_activation'.format(layer))
-
-					alive_neurons = tf.count_nonzero(conv_act, name='active_neuron_number_{}'.format(layer))
-					self._summaries.append(tf.summary.scalar('nb of relu neurons alive in layer {}'.format(layer), alive_neurons))
-
-				elif self.activation_function == 'lrelu':
-					# leaky relu to avoid the dying relu problem
-					conv_act = l_relu(conv_preact, leak = self.relu_leak,  name='conv_{}_activation'.format(layer))
-
-					alive_neurons = tf.count_nonzero(conv_act, name='active_neuron_number_{}'.format(layer))
-					self._summaries.append(tf.summary.scalar('nb of relu neurons alive in layer {}'.format(layer), alive_neurons))
-
-				elif self.activation_function == 'scaled_tanh':
-					conv_act = tf.add(tf.nn.tanh(conv_preact) / 2, 0.5, name='conv_{}_activation'.format(layer))
-
-				else:
-					conv_act = tf.nn.sigmoid(conv_preact, name='conv_{}_activation'.format(layer))
+				conv_act = tf.nn.sigmoid(conv_preact, name='conv_{}_activation'.format(layer))
 
 				# POOLING (2x2 max pooling)
 				if self.pooling_type == 'max_pooling':
