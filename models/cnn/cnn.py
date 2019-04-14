@@ -5,7 +5,7 @@ import collections
 class CNN: 
 	# convolutional neural network (same structure as cae with added fully-connected layers)
 
-	def __init__(self, data, target, keep_prob, filter_dims, hidden_channels, dense_depths, pooling_type = 'strided_conv', activation_function = 'sigmoid', add_tensorboard_summary = True, scope_name='CNN', one_hot_labels = True, step_size = 0.1, decay_steps = 10000, decay_rate = 0.1, weight_decay_regularizer = 0, weight_init_stddev = 0.2, weight_init_mean = 0, initial_bias_value = 0):
+	def __init__(self, data, target, keep_prob, filter_dims, hidden_channels, dense_depths, pooling_type = 'strided_conv', activation_function = 'sigmoid', add_tensorboard_summary = True, scope_name='CNN', step_size = 0.1, decay_steps = 10000, decay_rate = 0.1, weight_decay_regularizer = 0, weight_init_stddev = 0.2, weight_init_mean = 0, initial_bias_value = 0):
 
 		# TODO:
 		# 	- add assertion that test whether filter_dims, hidden_channels and strides have the right dimensions
@@ -20,7 +20,7 @@ class CNN:
 		self.keep_prob = keep_prob # input probability for dropout regularization (set to 1.0 for inference)
 
 		# filter_dims, out_channels and strides (if specified) are lists containing the specifications for each of the consecutive layers
-		# the choice of mac pooling and activation function is used for the whole network (the last activation function is always a sigmoid)
+		# the choice of max pooling and activation function is used for the whole network (the last activation function is always a sigmoid)
 
 		self.filter_dims 		= filter_dims 		# height and width of the conv kernels 	for each layer
 		self.hidden_channels 	= hidden_channels	# number of feature maps 				for each layer
@@ -69,11 +69,12 @@ class CNN:
 		self._optimize_dense_layers = None
 		self._accuracy		= None
 
-		self.weight_init_stddev 	= weight_init_stddev # 0.2 		
-		self.weight_init_mean 		= weight_init_mean   # 0.   	
-		self.initial_bias_value 	= initial_bias_value # 0. 
-		self.step_size 				= step_size			 # 0.0001
-
+		#self.weight_init_stddev 	= weight_init_stddev # 0.2 		
+		#self.weight_init_mean 		= weight_init_mean   # 0.   	
+		#self.initial_bias_value 	= initial_bias_value # 0. 
+		#self.step_size 				= step_size			 # 0.0001
+		
+		# initialization of CNN full-connected layer weight 
 		self.dense_stddev = 0.001
 		self.dense_mean   = 0.0
 		self.dense_b_init = 0.0001
@@ -197,6 +198,7 @@ class CNN:
 
 				self._summaries.append(tf.summary.histogram('layer {} preactivations'.format(layer), conv_preact))
 
+################################EDIT THIS PART for iterative sigmoid #########################
 				# ACTIVATION
 				if self.activation_function == 'relu':
 					conv_act = tf.nn.relu(conv_preact, name='conv_{}_activation'.format(layer))
@@ -207,12 +209,13 @@ class CNN:
 					conv_act = tf.add(tf.nn.tanh(conv_preact) / 2, 0.5, 'conv_{}_activation'.format(layer))
 				else:
 					conv_act = tf.nn.sigmoid(conv_preact, name='conv_{}_activation'.format(layer))
+################################EDIT THIS PART for iterative sigmoid #########################
 
 				# POOLING (2x2 max pooling)
 				if self.pooling_type == 'max_pooling':
 					pool_out = tf.nn.max_pool(conv_act, [1,2,2,1], [1,2,2,1], padding='SAME', name='max_pool_{}'.format(layer))
 					tmp_tensor = pool_out
-
+				###??### what is max-pooling_k3
 				elif self.pooling_type == 'max_pooling_k3':
 					# max pooling with larger kernel (as in AlexNet)
 					pool_out = tf.nn.max_pool(conv_act, [1,3,3,1], [1,2,2,1], padding='SAME', name='max_pool_{}'.format(layer))
@@ -268,11 +271,9 @@ class CNN:
 				self.dense_layer_variables.append(b)
 
 				dense_preact 	= tf.add(tf.matmul(tmp_tensor, W), b, name='dense_{}_preact'.format(d_ind))
-		
 			
-	
 				self._summaries.append(tf.summary.histogram('dense_layer_{}_preact'.format(d_ind), dense_preact))
-	
+################################EDIT THIS PART for iterative sigmoid #########################
 				if d_ind != len(self.dense_depths) - 1:
 
 					if self.activation_function =='relu':
@@ -292,7 +293,7 @@ class CNN:
 				else:
 
 					tmp_tensor = dense_preact
-
+################################EDIT THIS PART for iterative sigmoid #########################
 			self._logits = tmp_tensor
 
 		return self._logits
@@ -316,10 +317,10 @@ class CNN:
 		if self._error is None:
 			print('initialize error')
 
-			if self.one_hot_labels:
-				ce_error = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.target, logits=self.logits, name='cross-entropy_error'))
-			else:
-				ce_error = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.target, logits=self.logits, name='cross-entropy_error'))
+			#if self.one_hot_labels:
+			ce_error = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.target, logits=self.logits, name='cross-entropy_error'))
+			#else:
+				#ce_error = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.target, logits=self.logits, name='cross-entropy_error'))
 
 
 			self._error = ce_error + self.decay_factor * self.decay_sum
@@ -390,10 +391,10 @@ class CNN:
 		if self._accuracy is None:
 			print('initialize accuracy')
 
-			if self.one_hot_labels:
-				correct_prediction = tf.equal(tf.argmax(self.prediction,1), tf.argmax(self.target,1))
-			else:
-				correct_prediction = tf.equal(tf.argmax(self.prediction,1), self.target)
+			#if self.one_hot_labels:
+			correct_prediction = tf.equal(tf.argmax(self.prediction,1), tf.argmax(self.target,1))
+			#else:
+				#correct_prediction = tf.equal(tf.argmax(self.prediction,1), self.target)
 
 			accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
