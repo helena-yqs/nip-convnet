@@ -57,12 +57,12 @@ def main():
 			pre_trained_conv_weights_directory = init_weights_path
 			print('Init mode 	: pre-trained')
 		elif initialization_mode == 'from_folder':
-			#model_weights_directory = init_weights_path
-			#print('Init mode 	: from_folder')
+			model_weights_directory = init_weights_path
+			print('Init mode 	: from_folder')
 		elif initialization_mode == 'resume':
-			#print('Init mode 	: resume')
+			print('Init mode 	: resume')
 		else:
-			#print('Init mode 	: random initialization (default)')
+			print('Init mode 	: random initialization (default)')
 
 		# 5: Log folder
 		log_folder_name = arguments[5]
