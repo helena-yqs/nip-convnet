@@ -5,7 +5,7 @@ import collections
 class CNN: 
 	# convolutional neural network (same structure as cae with added fully-connected layers)
 
-	def __init__(self, data, target, keep_prob, filter_dims, hidden_channels, dense_depths, pooling_type = 'strided_conv', activation_function = 'sigmoid', add_tensorboard_summary = True, scope_name='CNN', step_size = 0.1, decay_steps = 10000, decay_rate = 0.1, weight_decay_regularizer = 0, weight_init_stddev = 0.2, weight_init_mean = 0, initial_bias_value = 0):
+	def __init__(self, data, target, keep_prob, filter_dims, hidden_channels, dense_depths, pooling_type = 'strided_conv', activation_function = 'sigmoid', add_tensorboard_summary = True, scope_name='CNN', one_hot_labels=True, step_size = 0.1, decay_steps = 10000, decay_rate = 0.1, weight_decay_regularizer = 0, weight_init_stddev = 0.2, weight_init_mean = 0, initial_bias_value = 0):
 
 		# TODO:
 		# 	- add assertion that test whether filter_dims, hidden_channels and strides have the right dimensions
@@ -198,7 +198,7 @@ class CNN:
 
 				self._summaries.append(tf.summary.histogram('layer {} preactivations'.format(layer), conv_preact))
 
-################################EDIT THIS PART for iterative sigmoid #########################
+#########################################################
 				# ACTIVATION
 				if self.activation_function == 'relu':
 					conv_act = tf.nn.relu(conv_preact, name='conv_{}_activation'.format(layer))
@@ -209,7 +209,7 @@ class CNN:
 					conv_act = tf.add(tf.nn.tanh(conv_preact) / 2, 0.5, 'conv_{}_activation'.format(layer))
 				else:
 					conv_act = tf.nn.sigmoid(conv_preact, name='conv_{}_activation'.format(layer))
-################################EDIT THIS PART for iterative sigmoid #########################
+#########################################################
 
 				# POOLING (2x2 max pooling)
 				if self.pooling_type == 'max_pooling':
@@ -269,7 +269,8 @@ class CNN:
 				self.dense_biases.append(b)
 				self.dense_layer_variables.append(W)
 				self.dense_layer_variables.append(b)
-
+				
+				###the fully connected layer of size N * N###
 				dense_preact 	= tf.add(tf.matmul(tmp_tensor, W), b, name='dense_{}_preact'.format(d_ind))
 			
 				self._summaries.append(tf.summary.histogram('dense_layer_{}_preact'.format(d_ind), dense_preact))
@@ -302,7 +303,7 @@ class CNN:
 	def prediction(self):
 
 		if self._prediction is None:
-
+			###the last layer only use sigmoid###
 			self._prediction = tf.nn.softmax(self.logits, name='softmax_prediction')
 
 		return self._prediction
