@@ -4,7 +4,7 @@ import numpy as np
 class CAE:
 	# convolutional autoencoder 
 
-	def __init__(self, data, filter_dims, hidden_channels, step_size = 0.0001, weight_init_stddev = 0.0001, weight_init_mean = 0.0001, initial_bias_value = 0.0001, strides = None, pooling_type = 'strided_conv', activation_function = 'sigmoid', tie_conv_weights = True, store_model_walkthrough = False, add_tensorboard_summary = True, relu_leak = 0.2, optimizer_type = 'gradient_descent', output_reconstruction_activation = 'sigmoid', regularization_factor = 0, decay_steps = None, decay_rate = 0.1, intialization_debug_output = True):
+	def __init__(self, data, filter_dims, hidden_channels, step_size = 0.0001, weight_init_stddev = 0.0001, weight_init_mean = 0.0001, initial_bias_value = 0.0001, strides = None, pooling_type = 'strided_conv', activation_function = 'sigmoid', tie_conv_weights = True, store_model_walkthrough = False, add_tensorboard_summary = True, optimizer_type = 'gradient_descent', output_reconstruction_activation = 'sigmoid', regularization_factor = 0, decay_steps = None, decay_rate = 0.1, intialization_debug_output = True):
 
 		if intialization_debug_output:
 			print('-----------------------------------------')
