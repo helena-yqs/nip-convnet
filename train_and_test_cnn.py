@@ -56,13 +56,13 @@ def main():
 		if initialization_mode == 'pre_trained_encoding':
 			pre_trained_conv_weights_directory = init_weights_path
 			print('Init mode 	: pre-trained')
-		elif initialization_mode == 'from_folder':
-			model_weights_directory = init_weights_path
-			print('Init mode 	: from_folder')
-		elif initialization_mode == 'resume':
-			print('Init mode 	: resume')
-		else:
-			print('Init mode 	: random initialization (default)')
+		#elif initialization_mode == 'from_folder':
+			#model_weights_directory = init_weights_path
+			#print('Init mode 	: from_folder')
+		#elif initialization_mode == 'resume':
+			#print('Init mode 	: resume')
+		#else:
+			#print('Init mode 	: random initialization (default)')
 
 		# 5: Log folder
 		log_folder_name = arguments[5]
@@ -262,10 +262,7 @@ def main():
 		x = tf.placeholder(tf.float32, [None, input_size[0], input_size[1], input_size[2]], name='input_images')
 		x_image = x
 
-	if one_hot_labels:
-		y_ = tf.placeholder(tf.float32, [None, num_classes], name='target_labels')
-	else:
-		y_ = tf.placeholder(tf.int64,   [None], name='target_labels')
+	y_ = tf.placeholder(tf.int64,   [None], name='target_labels')
 
 
 	keep_prob = tf.placeholder(tf.float32)
